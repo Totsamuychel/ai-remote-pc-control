@@ -4,6 +4,7 @@ from agent.tools.terminal import execute_terminal_command
 from agent.tools.files import read_file_content, write_file_content, list_directory
 from agent.tools.processes import list_system_processes, terminate_process
 from agent.tools.screen import capture_screenshot, list_open_windows, focus_window_by_title
+from agent.tools.input_control import mouse_click, mouse_double_click, keyboard_type, keyboard_press, mouse_scroll
 
 __all__ = [
     "execute_terminal_command",
@@ -15,4 +16,9 @@ __all__ = [
     "capture_screenshot",
     "list_open_windows",
     "focus_window_by_title",
+    "mouse_click",
+    "mouse_double_click",
+    "keyboard_type",
+    "keyboard_press",
+    "mouse_scroll",
 ]

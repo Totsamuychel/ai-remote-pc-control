@@ -22,6 +22,7 @@ if str(PROJECT_ROOT) not in sys.path:
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect
 from fastapi.responses import HTMLResponse, JSONResponse
 
+from agent.safety.approvals import ApprovalManager
 from streaming.capture import ScreenCapture
 
 app = FastAPI(title="AI Remote PC - Screen Streaming Service", version="0.1.0")
@@ -162,6 +163,16 @@ VIEWER_HTML = """<!DOCTYPE html>
         <img id="screen-view" alt="Remote Desktop Feed" style="display: none;" />
         <div id="placeholder" class="placeholder-text">
             Desktop stream is offline.<br/>Click <strong>Start Stream</strong> to begin.
+        </div>
+        <div id="approval-bar" style="display: none; position: absolute; bottom: 20px; background: rgba(15, 23, 42, 0.95); border: 1px solid #f59e0b; padding: 12px 20px; border-radius: 8px; box-shadow: 0 10px 25px rgba(0,0,0,0.7); display: flex; align-items: center; gap: 16px; z-index: 100;">
+            <div>
+                <div style="font-size: 0.75rem; color: #f59e0b; font-weight: 700; text-transform: uppercase;">⚠️ Human Confirmation Required</div>
+                <div id="approval-desc" style="font-size: 0.9rem; font-weight: 600; margin-top: 3px; color: #f8fafc;"></div>
+            </div>
+            <div style="display: flex; gap: 8px;">
+                <button id="btn-approve" style="background: #22c55e; color: #000; font-weight: 700; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer;">Approve</button>
+                <button id="btn-reject" style="background: #ef4444; color: #fff; font-weight: 700; border: none; padding: 6px 14px; border-radius: 4px; cursor: pointer;">Reject</button>
+            </div>
         </div>
     </main>
 
@@ -308,6 +319,43 @@ VIEWER_HTML = """<!DOCTYPE html>
                 document.exitFullscreen();
             }
         });
+
+        // Human-in-the-Loop Approval Polling Loop
+        let currentApprovalId = null;
+        async function checkPendingApprovals() {
+            try {
+                const res = await fetch('/api/approvals');
+                if (res.ok) {
+                    const data = await res.json();
+                    const pending = data.pending || [];
+                    const bar = document.getElementById('approval-bar');
+                    if (pending.length > 0) {
+                        const req = pending[0];
+                        currentApprovalId = req.id;
+                        document.getElementById('approval-desc').innerText = `${req.action}: ${JSON.stringify(req.details)}`;
+                        bar.style.display = 'flex';
+                    } else {
+                        bar.style.display = 'none';
+                        currentApprovalId = null;
+                    }
+                }
+            } catch (e) {}
+        }
+        setInterval(checkPendingApprovals, 2000);
+
+        document.getElementById('btn-approve').addEventListener('click', async () => {
+            if (currentApprovalId) {
+                await fetch(`/api/approvals/${currentApprovalId}/approve`, { method: 'POST' });
+                checkPendingApprovals();
+            }
+        });
+
+        document.getElementById('btn-reject').addEventListener('click', async () => {
+            if (currentApprovalId) {
+                await fetch(`/api/approvals/${currentApprovalId}/reject`, { method: 'POST' });
+                checkPendingApprovals();
+            }
+        });
     </script>
 </body>
 </html>
@@ -327,6 +375,42 @@ async def get_streaming_status():
     stats["active_viewers"] = len(active_clients)
     stats["server_time"] = time.time()
     return JSONResponse(content=stats)
+
+
+@app.get("/api/approvals")
+async def get_pending_approvals():
+    """Retrieve all pending approval requests awaiting human review."""
+    mgr = ApprovalManager.get_instance()
+    items = mgr.list_pending()
+    return JSONResponse(content={"count": len(items), "pending": items})
+
+
+@app.post("/api/approvals/{approval_id}/approve")
+async def approve_pending_action(approval_id: str):
+    """Grant human approval for an action held in pending state."""
+    mgr = ApprovalManager.get_instance()
+    success = mgr.approve(approval_id)
+    return JSONResponse(
+        content={
+            "success": success,
+            "approval_id": approval_id,
+            "message": f"Action '{approval_id}' approved." if success else f"Approval '{approval_id}' not found or expired.",
+        }
+    )
+
+
+@app.post("/api/approvals/{approval_id}/reject")
+async def reject_pending_action(approval_id: str):
+    """Reject and cancel an action held in pending state."""
+    mgr = ApprovalManager.get_instance()
+    success = mgr.reject(approval_id)
+    return JSONResponse(
+        content={
+            "success": success,
+            "approval_id": approval_id,
+            "message": f"Action '{approval_id}' rejected." if success else f"Approval '{approval_id}' not found.",
+        }
+    )
 
 
 @app.websocket("/stream")

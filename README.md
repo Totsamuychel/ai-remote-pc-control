@@ -212,6 +212,11 @@ python main.py --transport sse --host 0.0.0.0 --port 8000
 | `list_windows` | — | List all open application windows and metadata | Desktop window inspection |
 | `focus_window` | `title` | Switch active focus to a specific application window | Window focus dispatcher |
 | `view_terminal` | `cols` | Render current desktop screen directly into terminal | 24-bit TrueColor ANSI Half-Block |
+| `click` | `x`, `y`, `button`, `approval_id` | Click mouse button at coordinates | Mandatory `require_approval` |
+| `double_click` | `x`, `y`, `approval_id` | Double-click left mouse button | Mandatory `require_approval` |
+| `type_text` | `text`, `approval_id` | Type text into currently active window | Mandatory `require_approval` |
+| `press_key` | `key`, `approval_id` | Press special or standard keyboard key | Mandatory `require_approval` |
+| `scroll` | `amount`, `x`, `y`, `approval_id` | Scroll mouse wheel vertically | Mandatory `require_approval` |
 
 ---
 
@@ -273,12 +278,15 @@ python3 tests/test_stage3_screen.py
 
 # Run Stage 4 Screen streaming & terminal viewer tests
 python3 tests/test_stage4_streaming.py
+
+# Run Stage 5 GUI automation & approval enforcement tests
+python3 tests/test_stage5_gui.py
 ```
 
 Expected output:
 ```text
 ==================================================
- ALL STAGE 4 STREAMING TESTS PASSED!              
+ ALL STAGE 5 GUI CONTROL TESTS PASSED!            
 ==================================================
 ```
 
@@ -290,7 +298,7 @@ Expected output:
 - [x] **Stage 2: Client Integration** — Seamless configuration for Claude Code, Gemini CLI, and Antigravity CLI, agent system prompts, and scenario validation.
 - [x] **Stage 3: Screen & Windows** — Desktop screenshot capture (Wayland/grim & cross-platform mss), window enumeration (Hyprland, Sway, X11, Windows), and focus switching.
 - [x] **Stage 4: Real-Time Streaming** — WebSocket video stream via FastAPI, interactive HTML5 web player, and live Terminal Viewer (Kitty HD + ANSI TrueColor).
-- [ ] **Stage 5: GUI Control** — Mouse/keyboard automation with mandatory human approval.
+- [x] **Stage 5: GUI Control** — Mouse/keyboard automation with mandatory human approval (Web UI banner, CLI approval, and MCP token).
 - [ ] **Stage 6: Viewer App** — Cross-platform client for screen monitoring and telemetry.
 - [ ] **Stage 7: Production Packaging** — Systemd services, zero-config installers, and Tailscale VPN orchestration.
 

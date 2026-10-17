@@ -34,6 +34,7 @@ from agent.safety.audit import AuditLogger
 from agent.safety.policy import SecurityPolicy
 from agent.tools.files import list_directory, read_file_content, write_file_content
 from agent.tools.processes import list_system_processes, terminate_process
+from agent.tools.input_control import keyboard_press, keyboard_type, mouse_click, mouse_double_click, mouse_scroll
 from agent.tools.screen import capture_screenshot, focus_window_by_title, list_open_windows
 from agent.tools.terminal import execute_terminal_command
 
@@ -326,5 +327,110 @@ def create_mcp_server(name: str = "RemotePCControl", config_path: Optional[str] 
                     os.remove(tmp_path)
                 except OSError:
                     pass
+
+    @mcp.tool()
+    def click(
+        x: int,
+        y: int,
+        button: str = "left",
+        approval_id: str = "",
+    ) -> str:
+        """Click mouse button at desktop coordinates (requires human approval).
+
+        Safety Rules:
+        - All GUI input actions strictly enforce require_approval=true.
+        - If no valid approval_id is provided, returns pending_approval status with an approval token.
+        - The user must grant consent before the click can be dispatched.
+
+        Args:
+            x: Target horizontal pixel coordinate on the desktop.
+            y: Target vertical pixel coordinate on the desktop.
+            button: Mouse button to click: 'left', 'right', or 'middle' (default: 'left').
+            approval_id: 8-character approval token once approved by user.
+
+        Returns:
+            JSON string with status, coordinates, and execution result or approval prompt.
+        """
+        res = mouse_click(x=x, y=y, button=button, approval_id=approval_id if approval_id else None)
+        return json.dumps(res, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    def double_click(
+        x: int,
+        y: int,
+        approval_id: str = "",
+    ) -> str:
+        """Double-click mouse left button at desktop coordinates (requires human approval).
+
+        Args:
+            x: Target horizontal coordinate.
+            y: Target vertical coordinate.
+            approval_id: 8-character approval token once approved by user.
+
+        Returns:
+            JSON string with status and execution result.
+        """
+        res = mouse_double_click(x=x, y=y, approval_id=approval_id if approval_id else None)
+        return json.dumps(res, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    def type_text(
+        text: str,
+        approval_id: str = "",
+    ) -> str:
+        """Type text into the currently active desktop window (requires human approval).
+
+        Args:
+            text: String text sequence to type.
+            approval_id: 8-character approval token once approved by user.
+
+        Returns:
+            JSON string with number of characters typed and status.
+        """
+        res = keyboard_type(text=text, approval_id=approval_id if approval_id else None)
+        return json.dumps(res, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    def press_key(
+        key: str,
+        approval_id: str = "",
+    ) -> str:
+        """Press a special or standard keyboard key (requires human approval).
+
+        Args:
+            key: Key name or hotkey combination (e.g. 'Return', 'Tab', 'Escape', 'ctrl+c').
+            approval_id: 8-character approval token once approved by user.
+
+        Returns:
+            JSON string with key pressed and status.
+        """
+        res = keyboard_press(key=key, approval_id=approval_id if approval_id else None)
+        return json.dumps(res, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    def scroll(
+        amount: int,
+        x: int = 0,
+        y: int = 0,
+        approval_id: str = "",
+    ) -> str:
+        """Scroll mouse wheel vertically (requires human approval).
+
+        Args:
+            amount: Number of scroll notches (positive = scroll up, negative = scroll down).
+            x: Optional horizontal position for cursor before scrolling.
+            y: Optional vertical position for cursor before scrolling.
+            approval_id: 8-character approval token once approved by user.
+
+        Returns:
+            JSON string with scroll result.
+        """
+        res = mouse_scroll(
+            amount=amount,
+            x=x if (x > 0 or y > 0) else None,
+            y=y if (x > 0 or y > 0) else None,
+            approval_id=approval_id if approval_id else None,
+        )
+        return json.dumps(res, indent=2, ensure_ascii=False)
 
     return mcp
