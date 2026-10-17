@@ -1,0 +1,73 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Remote PC - Desktop Viewer</title>
+    <link rel="stylesheet" href="styles.css">
+</head>
+<body>
+    <div class="app-layout">
+        <!-- Top Toolbar -->
+        <header class="app-header">
+            <div class="brand">
+                <div class="status-indicator" id="status-dot"></div>
+                <h1 class="app-title">Remote PC Viewer</h1>
+                <span class="badge" id="conn-state">Disconnected</span>
+            </div>
+
+            <!-- Connection Form -->
+            <div class="connection-bar">
+                <input type="text" id="host-input" value="localhost:8080" placeholder="Host IP or Domain (e.g. 100.x.y.z:8080)" />
+                <button id="btn-connect" class="btn btn-primary">Connect</button>
+                <button id="btn-stop" class="btn btn-danger" style="display: none;">Stop Stream</button>
+            </div>
+
+            <!-- Telemetry Stats -->
+            <div class="hud-metrics">
+                <div class="metric"><span class="label">FPS</span><strong class="value" id="val-fps">0.0</strong></div>
+                <div class="metric"><span class="label">Res</span><strong class="value" id="val-res">-</strong></div>
+                <div class="metric"><span class="label">RTT</span><strong class="value" id="val-rtt">0 ms</strong></div>
+                <div class="metric"><span class="label">Bitrate</span><strong class="value" id="val-rate">0 KB/s</strong></div>
+            </div>
+
+            <!-- Quick Controls -->
+            <div class="header-actions">
+                <select id="select-fps" title="Target FPS">
+                    <option value="5">5 FPS</option>
+                    <option value="10">10 FPS</option>
+                    <option value="15" selected>15 FPS</option>
+                    <option value="25">25 FPS</option>
+                    <option value="30">30 FPS</option>
+                </select>
+                <button id="btn-fullscreen" class="btn btn-icon" title="Toggle Fullscreen">⛶</button>
+            </div>
+        </header>
+
+        <!-- Viewport Area -->
+        <main class="viewport-container" id="viewport">
+            <img id="stream-display" alt="Remote Screen" style="display: none;" />
+            <div id="standby-screen" class="standby-card">
+                <div class="standby-icon">🖥️</div>
+                <h2>Stream Offline</h2>
+                <p>Enter the remote host address and click <strong>Connect</strong> to view the desktop screen.</p>
+            </div>
+
+            <!-- Floating Approval Notification -->
+            <div id="approval-modal" class="approval-modal" style="display: none;">
+                <div class="approval-header">
+                    <span class="warning-icon">⚠️</span>
+                    <span class="approval-title">AI Action Approval Required</span>
+                </div>
+                <p id="approval-text" class="approval-body"></p>
+                <div class="approval-buttons">
+                    <button id="modal-approve" class="btn btn-success">Approve Action</button>
+                    <button id="modal-reject" class="btn btn-danger">Reject</button>
+                </div>
+            </div>
+        </main>
+    </div>
+
+    <script src="renderer.js"></script>
+</body>
+</html>

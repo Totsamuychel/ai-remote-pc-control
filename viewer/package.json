@@ -1,0 +1,22 @@
+{
+  "name": "ai-remote-pc-viewer",
+  "version": "0.1.0",
+  "description": "Desktop Viewer Application for AI Remote PC Control",
+  "main": "src/main.js",
+  "scripts": {
+    "start": "electron src/main.js",
+    "web": "node src/server.js"
+  },
+  "keywords": [
+    "remote-pc",
+    "mcp",
+    "streaming",
+    "viewer",
+    "electron"
+  ],
+  "author": "Danil",
+  "license": "MIT",
+  "devDependencies": {
+    "electron": "^33.0.0"
+  }
+}

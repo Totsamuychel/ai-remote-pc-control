@@ -281,13 +281,40 @@ python3 tests/test_stage4_streaming.py
 
 # Run Stage 5 GUI automation & approval enforcement tests
 python3 tests/test_stage5_gui.py
+
+# Run Stage 6 Desktop & Web Viewer tests
+python3 -m pytest tests/test_stage6_viewer.py
+
+# Run complete test suite (all 27 tests across Stages 1-6)
+python3 -m pytest tests/ -v
 ```
 
 Expected output:
 ```text
-==================================================
- ALL STAGE 5 GUI CONTROL TESTS PASSED!            
-==================================================
+============================== 27 passed in 2.67s ==============================
+```
+
+---
+
+## 🖥️ Stage 6: Desktop & Web Viewer
+
+Launch the viewer client in your preferred environment:
+
+```bash
+# Auto mode: Launches Electron if installed, otherwise opens your default web browser
+python viewer/viewer.py --host localhost:8080
+
+# Force browser view directly:
+python viewer/viewer.py --mode browser --host 100.x.y.z:8080
+
+# Run terminal stream view directly:
+python viewer/viewer.py --mode terminal --fps 15
+
+# Host viewer assets locally and connect to a remote target:
+python viewer/viewer.py --serve --port 3000 --host 100.x.y.z:8080
+
+# Native Electron App:
+cd viewer && npm install && npm start
 ```
 
 ---
@@ -299,8 +326,9 @@ Expected output:
 - [x] **Stage 3: Screen & Windows** — Desktop screenshot capture (Wayland/grim & cross-platform mss), window enumeration (Hyprland, Sway, X11, Windows), and focus switching.
 - [x] **Stage 4: Real-Time Streaming** — WebSocket video stream via FastAPI, interactive HTML5 web player, and live Terminal Viewer (Kitty HD + ANSI TrueColor).
 - [x] **Stage 5: GUI Control** — Mouse/keyboard automation with mandatory human approval (Web UI banner, CLI approval, and MCP token).
-- [ ] **Stage 6: Viewer App** — Cross-platform client for screen monitoring and telemetry.
+- [x] **Stage 6: Viewer App** — Cross-platform Electron desktop app & unified Python launcher with real-time telemetry (FPS, RTT, Bitrate) and interactive approval modal.
 - [ ] **Stage 7: Production Packaging** — Systemd services, zero-config installers, and Tailscale VPN orchestration.
+
 
 ---
 

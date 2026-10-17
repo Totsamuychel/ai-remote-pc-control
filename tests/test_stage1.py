@@ -129,6 +129,11 @@ def run_tests():
     print(" ALL STAGE 1 TESTS PASSED SUCCESSFULLY! ")
     print("========================================")
 
+def test_stage1_mvp():
+    """Pytest wrapper for Stage 1 test suite."""
+    run_tests()
+
 
 if __name__ == "__main__":
     run_tests()
+
