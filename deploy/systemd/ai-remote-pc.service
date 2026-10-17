@@ -1,0 +1,26 @@
+[Unit]
+Description=AI Remote PC Control - MCP Agent Service
+After=network.target
+
+[Service]
+Type=simple
+WorkingDirectory=%h/ai-remote-pc-control
+EnvironmentFile=-%h/ai-remote-pc-control/.env
+Environment=PYTHONUNBUFFERED=1
+Environment=DISPLAY=:0
+Environment=WAYLAND_DISPLAY=wayland-1
+Environment=XDG_RUNTIME_DIR=/run/user/%U
+
+# Launch MCP Server in SSE mode for network connectivity
+ExecStart=%h/ai-remote-pc-control/agent/.venv/bin/python agent/main.py --transport sse --host 0.0.0.0 --port 8000
+
+Restart=always
+RestartSec=5
+
+# Sandboxing & Resource constraints
+NoNewPrivileges=true
+ProtectSystem=strict
+ReadWritePaths=%h /tmp
+
+[Install]
+WantedBy=default.target

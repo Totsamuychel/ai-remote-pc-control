@@ -4,7 +4,7 @@
   <img src="https://img.shields.io/badge/Python-3.11%2B-blue?style=for-the-badge&logo=python" alt="Python 3.11+" />
   <img src="https://img.shields.io/badge/MCP-FastMCP-6366f1?style=for-the-badge" alt="MCP FastMCP" />
   <img src="https://img.shields.io/badge/Security-Zero--Trust%20Sandbox-green?style=for-the-badge" alt="Zero-Trust" />
-  <img src="https://img.shields.io/badge/Status-Stage%201%20MVP-success?style=for-the-badge" alt="Stage 1 MVP" />
+  <img src="https://img.shields.io/badge/Status-Production%20Ready%20(Stages%201--7)-success?style=for-the-badge" alt="Production Ready" />
   <img src="https://img.shields.io/badge/License-MIT-orange?style=for-the-badge" alt="License" />
 </p>
 
@@ -285,13 +285,16 @@ python3 tests/test_stage5_gui.py
 # Run Stage 6 Desktop & Web Viewer tests
 python3 -m pytest tests/test_stage6_viewer.py
 
-# Run complete test suite (all 27 tests across Stages 1-6)
+# Run Stage 7 Production Packaging & Deployment tests
+python3 -m pytest tests/test_stage7_deployment.py
+
+# Run complete test suite (all 32 tests across Stages 1-7)
 python3 -m pytest tests/ -v
 ```
 
 Expected output:
 ```text
-============================== 27 passed in 2.67s ==============================
+============================== 32 passed in 2.61s ==============================
 ```
 
 ---
@@ -319,7 +322,21 @@ cd viewer && npm install && npm start
 
 ---
 
-## 🗺️ Roadmap
+## 🚀 Stage 7: Production Packaging & Guides
+
+Comprehensive documentation and deployment guides are available in [`docs/`](docs/):
+
+- 🐧 **Linux Setup**: [`docs/setup-linux.md`](docs/setup-linux.md) (Wayland vs. X11, Display variables, systemd services)
+- 🪟 **Windows Setup**: [`docs/setup-windows.md`](docs/setup-windows.md) (PowerShell installer, Task Scheduler, Win32 API)
+- 🌐 **Tailscale VPN**: [`docs/tailscale-setup.md`](docs/tailscale-setup.md) (Zero-port-forwarding private mesh, IP discovery, ACLs)
+- 🤖 **AI Clients Setup**: [`docs/clients-setup.md`](docs/clients-setup.md) (Claude Code, Gemini CLI, Antigravity CLI configs)
+- 📱 **Telegram Approvals**: [`docs/telegram-approval.md`](docs/telegram-approval.md) (Smartphone approval buttons via BotFather)
+- 🛡️ **Security Architecture**: [`docs/security.md`](docs/security.md) (Sandboxing, global blacklists, safe testing)
+- 🏢 **Multi-PC Fleet Scaling**: [`docs/multi-pc-scaling.md`](docs/multi-pc-scaling.md) (Fleet management, host routing, multi-server MCP)
+
+---
+
+## 🗺️ Implementation Roadmap
 
 - [x] **Stage 1: MVP** — Core FastMCP server, terminal commands, file sandboxing, process inspection, safety policy, and audit logging.
 - [x] **Stage 2: Client Integration** — Seamless configuration for Claude Code, Gemini CLI, and Antigravity CLI, agent system prompts, and scenario validation.
@@ -327,11 +344,11 @@ cd viewer && npm install && npm start
 - [x] **Stage 4: Real-Time Streaming** — WebSocket video stream via FastAPI, interactive HTML5 web player, and live Terminal Viewer (Kitty HD + ANSI TrueColor).
 - [x] **Stage 5: GUI Control** — Mouse/keyboard automation with mandatory human approval (Web UI banner, CLI approval, and MCP token).
 - [x] **Stage 6: Viewer App** — Cross-platform Electron desktop app & unified Python launcher with real-time telemetry (FPS, RTT, Bitrate) and interactive approval modal.
-- [ ] **Stage 7: Production Packaging** — Systemd services, zero-config installers, and Tailscale VPN orchestration.
-
+- [x] **Stage 7: Production Packaging** — Systemd services, zero-config installers (`install.sh`/`install.ps1`), Tailscale VPN orchestration, Telegram smartphone approvals, and multi-PC scaling.
 
 ---
 
 ## 📄 License
 
 This project is licensed under the [MIT License](LICENSE).
+

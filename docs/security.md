@@ -1,63 +1,68 @@
-# Security Architecture (Safety Layer)
+# Security Architecture & Safety Guidelines
 
-**AI Remote PC Control** is designed with the principle of **Zero-Trust AI Execution**. The system assumes AI agent output can be unpredictable or potentially hazardous, enforcing strict sandboxing and approval barriers.
+**AI Remote PC Control** is engineered around the principle of **Zero-Trust AI Automation**. Because language models can occasionally hallucinate commands or click erroneous UI coordinates, multiple layers of defense are enforced before any mutating operation touches your computer.
 
 ---
 
 ## 1. Security Modes (`security.mode`)
 
-| Mode | Description | Permitted Operations |
+The system operates under one of three configurable security tiers defined in `agent/config.yaml`:
+
+| Mode | Intended Use | Permitted Operations |
 |---|---|---|
-| `read-only` | Strict Read-Only | `ping`, `read_file`, `list_dir`, `list_processes`, read inspection shell commands (`ls`, `cat`, `uptime`). Writing, modifying, and terminating processes are strictly blocked. |
-| `safe-execute` *(Default)* | Sandboxed Whitelist | Operations are restricted to `allowed_directories`. Whitelisted binaries (`ls`, `cat`, `git`, `python`, etc.) execute immediately. Unlisted commands or process kills require explicit human approval (`pending_approval`). |
-| `full-control` | Full Access | All commands allowed except globally blacklisted catastrophic patterns. Complete audit logging of all operations. |
+| **`read-only`** | Passive Monitoring & Diagnostics | Only non-mutating operations: `read_file`, `list_dir`, `list_processes`, `screenshot`, `list_windows`, `view_terminal`, inspection commands (`ls`, `cat`, `uptime`). All file writing, GUI clicking, typing, and process killing are rejected. |
+| **`safe-execute`** *(Default)* | Everyday AI Pair-Programming | Sandboxed filesystem access within `allowed_directories`. Whitelisted safe binaries (`git`, `npm`, `python`, `cargo`) execute immediately. GUI interactions, process kills, and non-whitelisted commands require human approval (`approval_id`). |
+| **`full-control`** | Trusted Sandboxed Environments | Unrestricted execution subject only to the **Global Blacklist** and comprehensive JSONL audit logging. |
 
 ---
 
-## 2. File System Sandboxing
+## 2. Global Command Blacklist
 
-All paths are evaluated and resolved via `Path.resolve()` with tilde expansion (`~`) and symbolic link resolution:
-- **Path Traversal Protection**: Relative escapes like `../../../../etc/shadow` are resolved to absolute canonical paths and blocked.
-- **Allowed Boundaries**: Any access outside `allowed_directories` triggers a `SecurityViolation` and logs a security event.
+The following destructive patterns are **blocked unconditionally** across all modes:
 
----
-
-## 3. Command Blacklist (Blocked Patterns)
-
-The following destructive patterns are **blocked unconditionally across all modes**:
-- Recursive root deletion: `rm -rf /`, `rm -rf /*`
-- Filesystem formatting: `mkfs`, `mkfs.*`
-- Direct block device overwrites: `dd if=...`, `> /dev/sda`, `> /dev/nvme*`
-- Fork bombs: `:(){ :|:& };:`
-- Root permission mutations: `chmod -R 777 /`
-- Emergency system shutdowns: `shutdown`, `reboot`, `poweroff`, `init 0`
+- **Root Filesystem Deletion**: `rm -rf /`, `rm -rf /*`, `rm -rf ~`
+- **Filesystem Formatting**: `mkfs`, `mkfs.*`
+- **Raw Disk / Partition Overwrites**: `dd if=...`, direct redirects to `/dev/sd*`, `/dev/nvme*`, or Windows `\\.\PhysicalDrive*`
+- **Denial of Service / Fork Bombs**: `:(){ :|:& };:`
+- **Global Permission Destabilization**: `chmod -R 777 /`, `chmod -R 777 ~`
+- **System Shutdown & Reboots**: `shutdown`, `reboot`, `poweroff`, `init 0`
 
 ---
 
-## 4. Human Approval Workflow
+## 3. Human Approval Channels
 
-When an operation poses potential risk or is not whitelisted:
-1. The server queues an approval request with a unique 8-character `approval_id`.
-2. The action is held in `pending_approval` state and is not executed.
-3. The user or supervisor grants consent using `approve_action(approval_id)`.
-4. Approval tokens expire after a configurable timeout (default: 120 seconds).
+High-risk operations (mouse clicks, typing, killing processes, executing unwhitelisted scripts) require explicit human consent:
+
+1. **Web HUD Banner**: Pops up a warning modal on `http://localhost:8080` or in the Desktop Viewer with **Approve** and **Reject** buttons.
+2. **REST API**: External scripts or frontends can approve via `POST /api/approvals/{id}/approve` or `reject`.
+3. **Telegram Inline Buttons**: Instant smartphone alert with interactive inline buttons via `@BotFather` integration.
+4. **MCP Command**: Local approval via `approve_action(approval_id)`.
+
+Tokens automatically expire after **120 seconds** (configurable in `agent/config.yaml`).
 
 ---
 
-## 5. Audit Logging (`audit.jsonl`)
+## 4. How to Test the Project Safely
 
-Every attempt, execution, status, and failure is recorded in JSONL format:
-```json
-{
-  "timestamp": "2026-10-17T12:20:00.000Z",
-  "action": "run_command",
-  "status": "executed",
-  "params": {"command": "ls -la /home/Danya"},
-  "duration_ms": 12.4,
-  "exit_code": 0,
-  "output_summary": "total 48...",
-  "error": null,
-  "client": "unknown"
-}
-```
-Logs are protected by thread locks and append safely.
+When setting up and testing AI Remote PC Control for the first time:
+
+1. **Start in `safe-execute` or `read-only` Mode**:
+   Always keep `security.mode: "safe-execute"` in `agent/config.yaml`.
+2. **Restricted `allowed_directories`**:
+   Set `allowed_directories` only to a disposable test folder:
+   ```yaml
+   allowed_directories:
+     - "/home/Danya/ai_test_sandbox"
+     - "/tmp"
+   ```
+3. **Verify Blacklist Blocking**:
+   Ask the AI client: *"Try running `rm -rf /`"*.
+   Verify in the output and audit log that the command was immediately blocked with a `SecurityViolation`.
+4. **Verify Mandatory Approval for GUI Actions**:
+   Ask the AI: *"Click at coordinates 100, 100"*.
+   Verify that the action is not performed until you explicitly click **Approve** in the Viewer or Telegram.
+5. **Monitor Audit Logs in Real Time**:
+   Keep a terminal open running:
+   ```bash
+   tail -f logs/audit.jsonl | jq .
+   ```
