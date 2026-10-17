@@ -1,0 +1,18 @@
+{
+  "name": "remote-pc-control",
+  "version": "0.1.0",
+  "description": "Remote PC Control MCP extension for Gemini CLI",
+  "mcpServers": {
+    "remote-pc": {
+      "command": "python",
+      "args": [
+        "/run/media/Danya/DATA/code/Proj/agent/main.py",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "SECURITY_MODE": "safe-execute"
+      }
+    }
+  }
+}

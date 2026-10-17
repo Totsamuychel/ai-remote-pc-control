@@ -1,0 +1,81 @@
+# AI Remote PC Control - Configuration
+server:
+  name: "RemotePCControl"
+  version: "0.1.0"
+  transport: "stdio"     # stdio | sse
+  host: "127.0.0.1"
+  port: 8000
+
+security:
+  # Security modes:
+  #   - "read-only": Only informational tools and read operations
+  #   - "safe-execute": Commands validated against whitelist, paths strictly sandboxed
+  #   - "full-control": All non-blocked commands allowed (with audit logging)
+  mode: "safe-execute"
+
+  # Allowed root paths for file and command execution operations
+  allowed_directories:
+    - "/home/Danya"
+    - "/tmp"
+    - "/run/media/Danya/DATA/code/Proj"
+
+  # Dangerous command regex patterns blocked in ALL modes
+  blocked_patterns:
+    - '^rm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)\s+/'
+    - 'rm\s+(-[a-zA-Z]*r[a-zA-Z]*f|-[a-zA-Z]*f[a-zA-Z]*r)\s+/\*'
+    - 'mkfs(\.[a-zA-Z0-9]+)?\s+.*'
+    - 'dd\s+if=.*'
+    - ':\(\)\s*\{\s*:\|:&\s*\};:'
+    - 'chmod\s+(-R\s+)?777\s+/'
+    - '>\s*/dev/sd[a-z]'
+    - '>\s*/dev/nvme[0-9]'
+    - '^shutdown\b.*'
+    - '^reboot\b.*'
+    - '^poweroff\b.*'
+    - '^init\s+[06]'
+
+  # Whitelisted command binaries allowed in "safe-execute" mode
+  whitelist_commands:
+    - "ls"
+    - "dir"
+    - "pwd"
+    - "cat"
+    - "head"
+    - "tail"
+    - "grep"
+    - "find"
+    - "echo"
+    - "git"
+    - "python"
+    - "python3"
+    - "node"
+    - "npm"
+    - "whoami"
+    - "uname"
+    - "df"
+    - "free"
+    - "ps"
+    - "uptime"
+    - "mkdir"
+    - "cp"
+    - "mv"
+    - "touch"
+    - "stat"
+    - "date"
+    - "which"
+    - "curl"
+    - "wget"
+
+  # Maximum file read size in bytes (2 MB)
+  max_file_read_bytes: 2097152
+
+  # Default timeout in seconds for command execution
+  default_command_timeout: 30
+
+audit:
+  enabled: true
+  log_file: "logs/audit.jsonl"
+
+approvals:
+  enabled: true
+  timeout_seconds: 120

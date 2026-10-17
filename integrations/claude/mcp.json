@@ -1,0 +1,15 @@
+{
+  "mcpServers": {
+    "remote-pc": {
+      "command": "python",
+      "args": [
+        "/run/media/Danya/DATA/code/Proj/agent/main.py",
+        "--transport",
+        "stdio"
+      ],
+      "env": {
+        "SECURITY_MODE": "safe-execute"
+      }
+    }
+  }
+}

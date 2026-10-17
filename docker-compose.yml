@@ -1,0 +1,19 @@
+version: '3.8'
+
+services:
+  agent:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    container_name: remote_pc_agent
+    environment:
+      - MCP_TRANSPORT=sse
+      - MCP_HOST=0.0.0.0
+      - MCP_PORT=8000
+      - SECURITY_MODE=safe-execute
+    ports:
+      - "8000:8000"
+    volumes:
+      - ./agent/logs:/app/agent/logs
+      - ./agent/config.yaml:/app/agent/config.yaml:ro
+    restart: unless-stopped
