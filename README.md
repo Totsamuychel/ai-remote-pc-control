@@ -208,6 +208,9 @@ python main.py --transport sse --host 0.0.0.0 --port 8000
 | `kill_process` | `pid`, `force`, `approval_id` | Terminate process by PID | Protected PIDs guarded (PID 0, 1, self) |
 | `pending_approvals`| — | List actions held for human review | Inspection |
 | `approve_action` | `approval_id` | Approve held operation | Token authenticated |
+| `screenshot` | `output_path`, `quality`, `format` | Capture desktop screenshot to temp file | Multi-platform (Wayland & X11) |
+| `list_windows` | — | List all open application windows and metadata | Desktop window inspection |
+| `focus_window` | `title` | Switch active focus to a specific application window | Window focus dispatcher |
 
 ---
 
@@ -215,7 +218,7 @@ python main.py --transport sse --host 0.0.0.0 --port 8000
 
 | Security Mode | Allowed Operations |
 |---|---|
-| **`read-only`** | Diagnostic inspection only. `read_file`, `list_dir`, `list_processes`, safe inspection commands (`ls`, `cat`, `uptime`). No mutations. |
+| **`read-only`** | Diagnostic inspection only. `read_file`, `list_dir`, `list_processes`, `screenshot`, `list_windows`, safe inspection commands (`ls`, `cat`, `uptime`). No mutations. |
 | **`safe-execute`** *(Default)* | Sandboxed file access. Whitelisted commands execute seamlessly. Unknown binaries or process termination require approval (`approval_id`). |
 | **`full-control`** | Unrestricted command execution with blacklist filtering and comprehensive JSONL audit logging. |
 
@@ -232,7 +235,7 @@ The following commands are **unconditionally blocked**:
 
 ## 🧪 Testing
 
-Run the automated test suite to verify all tools, sandbox policies, approval flows, and audit loggers:
+Run the automated test suite to verify all tools, sandbox policies, approval flows, screen captures, and audit loggers:
 
 ```bash
 # Run Stage 1 MVP tool & safety tests
@@ -240,12 +243,15 @@ python3 tests/test_stage1.py
 
 # Run Stage 2 Client integration & scenario tests
 python3 tests/test_stage2_client.py
+
+# Run Stage 3 Screen capture & window management tests
+python3 tests/test_stage3_screen.py
 ```
 
 Expected output:
 ```text
 ==================================================
- ALL STAGE 2 CLIENT INTEGRATION TESTS PASSED!     
+ ALL STAGE 3 SCREEN & WINDOWS TESTS PASSED!       
 ==================================================
 ```
 
@@ -255,7 +261,7 @@ Expected output:
 
 - [x] **Stage 1: MVP** — Core FastMCP server, terminal commands, file sandboxing, process inspection, safety policy, and audit logging.
 - [x] **Stage 2: Client Integration** — Seamless configuration for Claude Code, Gemini CLI, and Antigravity CLI, agent system prompts, and scenario validation.
-- [ ] **Stage 3: Screen & Windows** — Desktop screenshot capture (`screenshot`) and window inspection (`list_windows`).
+- [x] **Stage 3: Screen & Windows** — Desktop screenshot capture (Wayland/grim & cross-platform mss), window enumeration (Hyprland, Sway, X11, Windows), and focus switching.
 - [ ] **Stage 4: Real-Time Streaming** — WebSocket video stream via FastAPI and `mss`.
 - [ ] **Stage 5: GUI Control** — Mouse/keyboard automation with mandatory human approval.
 - [ ] **Stage 6: Viewer App** — Cross-platform client for screen monitoring and telemetry.

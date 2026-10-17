@@ -34,6 +34,7 @@ from agent.safety.audit import AuditLogger
 from agent.safety.policy import SecurityPolicy
 from agent.tools.files import list_directory, read_file_content, write_file_content
 from agent.tools.processes import list_system_processes, terminate_process
+from agent.tools.screen import capture_screenshot, focus_window_by_title, list_open_windows
 from agent.tools.terminal import execute_terminal_command
 
 
@@ -243,5 +244,53 @@ def create_mcp_server(name: str = "RemotePCControl", config_path: Optional[str] 
             indent=2,
             ensure_ascii=False,
         )
+
+    @mcp.tool()
+    def screenshot(
+        output_path: str = "",
+        quality: int = 80,
+        format: str = "jpeg",
+    ) -> str:
+        """Capture a screenshot of the remote desktop screen and save to a temporary file.
+
+        Args:
+            output_path: Optional custom destination file path (defaults to /tmp/remote_pc_screenshots/...).
+            quality: Compression quality for JPEG format (1-100, default: 80).
+            format: Image format: 'jpeg' or 'png' (default: 'jpeg').
+
+        Returns:
+            JSON string with success status, image dimensions (width, height), size in bytes,
+            temporary file path, and descriptive summary.
+        """
+        res = capture_screenshot(output_path=output_path, quality=quality, format=format)
+        return json.dumps(res, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    def list_windows() -> str:
+        """List currently open and active application windows on the remote desktop.
+
+        Inspects active desktop windows across Hyprland, Sway, X11, or Windows environments.
+
+        Returns:
+            JSON string with total window count, active session environment, and list of
+            windows (id, title, class, pid, workspace, active status).
+        """
+        res = list_open_windows()
+        return json.dumps(res, indent=2, ensure_ascii=False)
+
+    @mcp.tool()
+    def focus_window(
+        title: str,
+    ) -> str:
+        """Switch active desktop focus to an open window matching the given title or class name.
+
+        Args:
+            title: Query substring matching window title, application class name, or window ID.
+
+        Returns:
+            JSON string indicating success status, matched window title/class, and status message.
+        """
+        res = focus_window_by_title(query=title)
+        return json.dumps(res, indent=2, ensure_ascii=False)
 
     return mcp
