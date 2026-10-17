@@ -211,6 +211,30 @@ python main.py --transport sse --host 0.0.0.0 --port 8000
 | `screenshot` | `output_path`, `quality`, `format` | Capture desktop screenshot to temp file | Multi-platform (Wayland & X11) |
 | `list_windows` | — | List all open application windows and metadata | Desktop window inspection |
 | `focus_window` | `title` | Switch active focus to a specific application window | Window focus dispatcher |
+| `view_terminal` | `cols` | Render current desktop screen directly into terminal | 24-bit TrueColor ANSI Half-Block |
+
+---
+
+## 📺 Live Screen Streaming & Terminal Viewing
+
+### 1. Web Viewer (Browser)
+Launch the FastAPI WebSocket streaming service:
+```bash
+python streaming/server.py --host 0.0.0.0 --port 8080
+```
+Open **http://localhost:8080** (or `http://tailscale-ip:8080`) in any browser to view the real-time stream with HUD telemetry (FPS, Latency, Resolution, Data Rate) and stream controls.
+
+### 2. Live Terminal Viewer (Directly in Console)
+View the desktop stream live inside your terminal:
+```bash
+# Continuous live stream in terminal
+python streaming/terminal_viewer.py --fps 10
+
+# Single snapshot in terminal
+python streaming/terminal_viewer.py --once
+```
+- **Kitty Terminal**: Uses high-resolution Kitty Graphics Protocol (`kitten icat`).
+- **All other terminals**: Uses universal 24-bit TrueColor Unicode Half-Blocks (`▀`).
 
 ---
 
@@ -218,7 +242,7 @@ python main.py --transport sse --host 0.0.0.0 --port 8000
 
 | Security Mode | Allowed Operations |
 |---|---|
-| **`read-only`** | Diagnostic inspection only. `read_file`, `list_dir`, `list_processes`, `screenshot`, `list_windows`, safe inspection commands (`ls`, `cat`, `uptime`). No mutations. |
+| **`read-only`** | Diagnostic inspection only. `read_file`, `list_dir`, `list_processes`, `screenshot`, `list_windows`, `view_terminal`, safe inspection commands (`ls`, `cat`, `uptime`). No mutations. |
 | **`safe-execute`** *(Default)* | Sandboxed file access. Whitelisted commands execute seamlessly. Unknown binaries or process termination require approval (`approval_id`). |
 | **`full-control`** | Unrestricted command execution with blacklist filtering and comprehensive JSONL audit logging. |
 
@@ -235,7 +259,7 @@ The following commands are **unconditionally blocked**:
 
 ## 🧪 Testing
 
-Run the automated test suite to verify all tools, sandbox policies, approval flows, screen captures, and audit loggers:
+Run the automated test suite across all implemented stages:
 
 ```bash
 # Run Stage 1 MVP tool & safety tests
@@ -246,12 +270,15 @@ python3 tests/test_stage2_client.py
 
 # Run Stage 3 Screen capture & window management tests
 python3 tests/test_stage3_screen.py
+
+# Run Stage 4 Screen streaming & terminal viewer tests
+python3 tests/test_stage4_streaming.py
 ```
 
 Expected output:
 ```text
 ==================================================
- ALL STAGE 3 SCREEN & WINDOWS TESTS PASSED!       
+ ALL STAGE 4 STREAMING TESTS PASSED!              
 ==================================================
 ```
 
@@ -262,7 +289,7 @@ Expected output:
 - [x] **Stage 1: MVP** — Core FastMCP server, terminal commands, file sandboxing, process inspection, safety policy, and audit logging.
 - [x] **Stage 2: Client Integration** — Seamless configuration for Claude Code, Gemini CLI, and Antigravity CLI, agent system prompts, and scenario validation.
 - [x] **Stage 3: Screen & Windows** — Desktop screenshot capture (Wayland/grim & cross-platform mss), window enumeration (Hyprland, Sway, X11, Windows), and focus switching.
-- [ ] **Stage 4: Real-Time Streaming** — WebSocket video stream via FastAPI and `mss`.
+- [x] **Stage 4: Real-Time Streaming** — WebSocket video stream via FastAPI, interactive HTML5 web player, and live Terminal Viewer (Kitty HD + ANSI TrueColor).
 - [ ] **Stage 5: GUI Control** — Mouse/keyboard automation with mandatory human approval.
 - [ ] **Stage 6: Viewer App** — Cross-platform client for screen monitoring and telemetry.
 - [ ] **Stage 7: Production Packaging** — Systemd services, zero-config installers, and Tailscale VPN orchestration.

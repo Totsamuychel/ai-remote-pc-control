@@ -1,0 +1,8 @@
+# FastAPI & Server
+fastapi>=0.110.0
+uvicorn>=0.28.0
+websockets>=12.0
+
+# Screen Capture & Image Processing
+mss>=10.0.0
+Pillow>=10.0.0

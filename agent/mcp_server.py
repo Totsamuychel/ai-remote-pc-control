@@ -293,4 +293,38 @@ def create_mcp_server(name: str = "RemotePCControl", config_path: Optional[str] 
         res = focus_window_by_title(query=title)
         return json.dumps(res, indent=2, ensure_ascii=False)
 
+    @mcp.tool()
+    def view_terminal(
+        cols: int = 80,
+    ) -> str:
+        """Capture desktop screen and render it directly as formatted text for terminal viewing.
+
+        Uses 24-bit TrueColor ANSI escape sequences with Unicode half-block characters (▀).
+        Allows AI assistants and terminal users to inspect the graphical desktop layout directly
+        within their CLI session.
+
+        Args:
+            cols: Horizontal resolution in terminal columns (default: 80).
+
+        Returns:
+            ANSI formatted string rendering of the current desktop screen.
+        """
+        from streaming.terminal_viewer import render_ansi_halfblock
+
+        tmp_path = "/tmp/remote_pc_mcp_terminal_view.jpg"
+        shot = capture_screenshot(output_path=tmp_path, quality=75)
+        if not shot.get("success"):
+            return f"[Error] Screen capture failed: {shot.get('error')}"
+
+        try:
+            ansi_text = render_ansi_halfblock(tmp_path, max_cols=cols)
+            header = f"\n=== Remote PC Desktop Screen ({shot.get('width')}x{shot.get('height')}) ===\n"
+            return header + ansi_text + "\n"
+        finally:
+            if os.path.exists(tmp_path):
+                try:
+                    os.remove(tmp_path)
+                except OSError:
+                    pass
+
     return mcp
