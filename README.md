@@ -235,14 +235,18 @@ The following commands are **unconditionally blocked**:
 Run the automated test suite to verify all tools, sandbox policies, approval flows, and audit loggers:
 
 ```bash
+# Run Stage 1 MVP tool & safety tests
 python3 tests/test_stage1.py
+
+# Run Stage 2 Client integration & scenario tests
+python3 tests/test_stage2_client.py
 ```
 
 Expected output:
 ```text
-========================================
- ALL STAGE 1 TESTS PASSED SUCCESSFULLY! 
-========================================
+==================================================
+ ALL STAGE 2 CLIENT INTEGRATION TESTS PASSED!     
+==================================================
 ```
 
 ---
@@ -250,7 +254,7 @@ Expected output:
 ## 🗺️ Roadmap
 
 - [x] **Stage 1: MVP** — Core FastMCP server, terminal commands, file sandboxing, process inspection, safety policy, and audit logging.
-- [ ] **Stage 2: Client Integration** — Seamless setup for Claude Code and Gemini CLI extensions.
+- [x] **Stage 2: Client Integration** — Seamless configuration for Claude Code, Gemini CLI, and Antigravity CLI, agent system prompts, and scenario validation.
 - [ ] **Stage 3: Screen & Windows** — Desktop screenshot capture (`screenshot`) and window inspection (`list_windows`).
 - [ ] **Stage 4: Real-Time Streaming** — WebSocket video stream via FastAPI and `mss`.
 - [ ] **Stage 5: GUI Control** — Mouse/keyboard automation with mandatory human approval.

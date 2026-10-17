@@ -1,10 +1,12 @@
 {
   "name": "remote-pc-control",
   "version": "0.1.0",
-  "description": "Remote PC Control MCP extension for Gemini CLI",
+  "description": "Secure Model Context Protocol (MCP) server for remote PC control",
+  "author": "Danil",
+  "license": "MIT",
   "mcpServers": {
     "remote-pc": {
-      "command": "python",
+      "command": "/run/media/Danya/DATA/code/Proj/agent/.venv/bin/python",
       "args": [
         "/run/media/Danya/DATA/code/Proj/agent/main.py",
         "--transport",

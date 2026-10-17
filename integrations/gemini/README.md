@@ -1,22 +1,35 @@
-# Gemini CLI Integration
+# Gemini CLI Integration Guide
 
-## 1. Register Extension in Gemini CLI
+This guide details how to install and connect the `remote-pc` MCP extension in **Gemini CLI**.
 
-Install the extension directly into Gemini CLI:
+---
+
+## 1. Extension Installation
+
+### Method A: Direct Extension Install (Recommended)
+From your terminal, install the extension using the Gemini CLI extension manager:
 
 ```bash
-gemini extensions install /path/to/ai-remote-pc-control/integrations/gemini
+gemini extensions install /run/media/Danya/DATA/code/Proj/integrations/gemini
 ```
 
-Or configure the server in `~/.gemini/config.json`:
+To verify installed extensions:
+```bash
+gemini extensions list
+```
+
+---
+
+### Method B: Manual Configuration (`~/.gemini/config.json`)
+Add the `remote-pc` entry into `~/.gemini/config.json`:
 
 ```json
 {
   "mcpServers": {
     "remote-pc": {
-      "command": "/absolute/path/to/.venv/bin/python",
+      "command": "/run/media/Danya/DATA/code/Proj/agent/.venv/bin/python",
       "args": [
-        "/absolute/path/to/agent/main.py",
+        "/run/media/Danya/DATA/code/Proj/agent/main.py",
         "--transport",
         "stdio"
       ],
@@ -28,11 +41,42 @@ Or configure the server in `~/.gemini/config.json`:
 }
 ```
 
-## 2. Verification
+---
 
-```bash
-gemini
+## 2. Remote Setup via SSH or Tailscale
+
+For remote execution across machines:
+
+```json
+{
+  "mcpServers": {
+    "remote-pc": {
+      "command": "ssh",
+      "args": [
+        "-C",
+        "user@tailscale-ip",
+        "/run/media/Danya/DATA/code/Proj/agent/.venv/bin/python /run/media/Danya/DATA/code/Proj/agent/main.py --transport stdio"
+      ]
+    }
+  }
+}
 ```
 
-Prompt:
-> "Connect to my remote PC via remote-pc MCP server. Call ping(), report security_mode, and list files in the current folder."
+---
+
+## 3. Test Scenarios for Gemini CLI
+
+Run `gemini` in interactive mode and try:
+
+1. **Ping & Policy Check**:
+   > "Connect to `remote-pc` MCP server. Call `ping()` and report back the security mode and allowed directories."
+
+2. **Filesystem Exploration**:
+   > "Show the contents of the project folder using `list_dir()` and create a small scratch file `gemini_test.txt`."
+
+3. **Safe Command Execution**:
+   > "Run `python --version` and `df -h` on the remote host."
+
+4. **Security Boundary Enforcement**:
+   > "Read `/etc/shadow` on the remote PC."  
+   > *(Expected: Rejected with security violation error; logged to audit.jsonl).*

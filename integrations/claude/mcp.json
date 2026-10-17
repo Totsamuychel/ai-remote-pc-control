@@ -1,7 +1,7 @@
 {
   "mcpServers": {
     "remote-pc": {
-      "command": "python",
+      "command": "/run/media/Danya/DATA/code/Proj/agent/.venv/bin/python",
       "args": [
         "/run/media/Danya/DATA/code/Proj/agent/main.py",
         "--transport",
