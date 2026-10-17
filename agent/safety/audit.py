@@ -20,8 +20,14 @@ class AuditLogger:
 
     def __init__(self, log_path: str = "logs/audit.jsonl", enabled: bool = True):
         self.enabled = enabled
-        self.log_file = Path(log_path).resolve()
+        p = Path(log_path)
+        if not p.is_absolute():
+            project_root = Path(__file__).parent.parent.parent.resolve()
+            self.log_file = (project_root / p).resolve()
+        else:
+            self.log_file = p.resolve()
         self._file_lock = threading.Lock()
+
 
         if self.enabled:
             self.log_file.parent.mkdir(parents=True, exist_ok=True)

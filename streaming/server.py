@@ -484,7 +484,12 @@ async def websocket_stream_endpoint(websocket: WebSocket):
         pass
     finally:
         listener_task.cancel()
+        try:
+            await listener_task
+        except asyncio.CancelledError:
+            pass
         active_clients.discard(websocket)
+
 
 
 def main():

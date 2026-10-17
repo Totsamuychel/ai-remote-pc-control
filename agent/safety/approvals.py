@@ -100,8 +100,9 @@ class ApprovalManager:
             return req.status
 
     def list_pending(self) -> List[Dict[str, Any]]:
-        """List all currently active pending requests."""
+        """List all currently active pending requests as dictionaries."""
         with self._access_lock:
+            self._prune_expired()
             active = []
             for req in self._approvals.values():
                 if req.status == "pending":
@@ -110,3 +111,28 @@ class ApprovalManager:
                     else:
                         active.append(req.to_dict())
             return active
+
+    def get_pending_requests(self) -> List[PendingApproval]:
+        """Return list of active PendingApproval dataclass instances."""
+        with self._access_lock:
+            self._prune_expired()
+            active = []
+            for req in self._approvals.values():
+                if req.status == "pending":
+                    if req.is_expired:
+                        req.status = "expired"
+                    else:
+                        active.append(req)
+            return active
+
+    def _prune_expired(self):
+        """Purge historical expired or completed requests if count exceeds threshold."""
+        if len(self._approvals) > 500:
+            now = time.time()
+            to_delete = [
+                k for k, v in self._approvals.items()
+                if v.status in ("expired", "rejected", "approved") and (now - v.created_at) > 3600
+            ]
+            for k in to_delete:
+                del self._approvals[k]
+

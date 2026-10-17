@@ -106,9 +106,16 @@ def main():
     elif args.transport == "sse":
         # Configure FastMCP settings for SSE if applicable
         if hasattr(mcp, "settings"):
-            mcp.settings.host = args.host
-            mcp.settings.port = args.port
-        mcp.run(transport="sse")
+            if hasattr(mcp.settings, "host"):
+                mcp.settings.host = args.host
+            if hasattr(mcp.settings, "port"):
+                mcp.settings.port = args.port
+        try:
+            mcp.run(transport="sse", host=args.host, port=args.port)
+        except TypeError:
+            # Fallback if specific FastMCP version doesn't accept host/port in run()
+            mcp.run(transport="sse")
+
 
 
 if __name__ == "__main__":

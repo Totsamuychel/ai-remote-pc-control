@@ -87,3 +87,46 @@ def test_telegram_approval_notifier_configured():
     notifier = TelegramApprovalNotifier(bot_token="test_token_123", chat_id="99999999")
     assert notifier.is_configured is True
     assert notifier.chat_id == "99999999"
+
+
+def test_telegram_polling_and_approval_manager():
+    """Verify ApprovalManager.get_pending_requests and notifier polling."""
+    mgr = ApprovalManager.get_instance()
+    req = mgr.create_request("test_action", {"foo": "bar"})
+    
+    pending_objs = mgr.get_pending_requests()
+    assert any(p.id == req.id for p in pending_objs)
+
+    notifier = TelegramApprovalNotifier(bot_token="", chat_id="")
+    # Should not raise AttributeError or crash when unconfigured
+    notifier.poll_pending_approvals()
+
+
+def test_read_only_mode_protections():
+    """Verify that terminate_process, GUI actions, and command redirection are blocked in read-only mode."""
+    from agent.safety.policy import SecurityPolicy, SecurityViolation
+    from agent.tools.processes import terminate_process
+    from agent.tools.input_control import mouse_click
+
+    policy = SecurityPolicy.get_instance()
+    original_mode = policy.mode
+    try:
+        policy.mode = "read-only"
+
+        # 1. Process termination should be blocked
+        kill_res = terminate_process(pid=99999)
+        assert kill_res["success"] is False
+        assert "read-only" in kill_res["error"]
+
+        # 2. GUI action should be blocked
+        gui_res = mouse_click(x=10, y=10)
+        assert gui_res["success"] is False
+        assert "read-only" in gui_res["error"]
+
+        # 3. Output redirection in commands should be blocked
+        with pytest.raises(SecurityViolation, match="Output redirection"):
+            policy.validate_command("cat /dev/null > /tmp/test.txt")
+
+    finally:
+        policy.mode = original_mode
+

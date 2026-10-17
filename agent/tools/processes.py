@@ -133,8 +133,22 @@ def terminate_process(
         )
         return {"success": False, "error": err, "pid": pid}
 
-    # 2. Check approval requirement in safe-execute mode
+    # 2. Block all process termination in read-only mode
+    if policy.mode == "read-only":
+        duration_ms = (time.time() - start_time) * 1000
+        err = "Process termination is blocked in 'read-only' mode."
+        logger.log(
+            action="kill_process",
+            params={"pid": pid, "force": force},
+            status="blocked",
+            duration_ms=duration_ms,
+            error=err,
+        )
+        return {"success": False, "error": err, "pid": pid}
+
+    # 3. Check approval requirement in safe-execute mode
     if policy.mode == "safe-execute":
+
         if approval_id and approval_mgr.check_status(approval_id) == "approved":
             pass  # Approved
         else:

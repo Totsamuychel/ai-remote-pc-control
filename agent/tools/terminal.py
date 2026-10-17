@@ -114,8 +114,10 @@ def execute_terminal_command(
             cwd=resolved_cwd,
             capture_output=True,
             text=True,
+            errors="replace",
             timeout=timeout,
         )
+
         duration_ms = (time.time() - start_time) * 1000
 
         result = {

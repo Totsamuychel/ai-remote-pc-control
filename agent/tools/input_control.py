@@ -15,6 +15,7 @@ from typing import Any, Dict, Optional
 
 from agent.safety.approvals import ApprovalManager
 from agent.safety.audit import AuditLogger
+from agent.safety.policy import SecurityPolicy
 
 
 def _enforce_approval(
@@ -24,15 +25,36 @@ def _enforce_approval(
 ) -> Optional[Dict[str, Any]]:
     """Verify whether the requested GUI action has valid human approval.
 
+    If in read-only mode, rejects the action immediately.
     If not approved, registers a new pending request and returns the pending response dict.
     If already approved, returns None to allow execution.
     """
-    approval_mgr = ApprovalManager.get_instance()
+    policy = SecurityPolicy.get_instance()
     logger = AuditLogger.get_instance()
+
+    # Block completely in read-only mode
+    if policy.mode == "read-only":
+        err_msg = f"GUI action '{action}' is blocked in 'read-only' mode."
+        logger.log(
+            action=action,
+            params=params,
+            status="blocked",
+            error=err_msg,
+        )
+        return {
+            "success": False,
+            "status": "blocked",
+            "error": err_msg,
+            "action": action,
+            "params": params,
+        }
+
+    approval_mgr = ApprovalManager.get_instance()
 
     # Check if an approval token was provided and marked approved
     if approval_id and approval_mgr.check_status(approval_id) == "approved":
         return None
+
 
     # Action requires approval -> register new request
     req = approval_mgr.create_request(action=action, details=params)

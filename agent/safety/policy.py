@@ -151,13 +151,17 @@ class SecurityPolicy:
             return True, None
 
         if self.mode == "read-only":
-            # In read-only mode, only non-mutating inspection commands are permitted
+            # In read-only mode, block output redirection and file mutations
+            if ">" in cmd_stripped:
+                raise SecurityViolation("Output redirection (>, >>) is blocked in 'read-only' mode.")
+
             safe_read_commands = {"ls", "pwd", "cat", "head", "tail", "grep", "find", "whoami", "uname", "df", "free", "ps", "uptime", "stat"}
             binaries = self._extract_command_binaries(cmd_stripped)
             for b in binaries:
                 if b not in safe_read_commands:
                     raise SecurityViolation(f"Command '{b}' is blocked in 'read-only' mode. Only inspection commands are allowed.")
             return True, None
+
 
         # Check blacklisted regex patterns across all modes
         for pattern in self.blocked_patterns:
