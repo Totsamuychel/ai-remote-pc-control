@@ -16,12 +16,18 @@ import json
 from typing import Any, Dict, Optional
 
 try:
-    from mcp.server.fastmcp import FastMCP
+    # MCP SDK 2.x (FastMCP renamed to MCPServer)
+    from mcp.server.mcpserver import MCPServer as FastMCP
 except ImportError:
     try:
-        from fastmcp import FastMCP  # type: ignore
+        # MCP SDK 1.x
+        from mcp.server.fastmcp import FastMCP
     except ImportError:
-        FastMCP = None  # Handled in create_server()
+        try:
+            # Standalone fastmcp package
+            from fastmcp import FastMCP  # type: ignore
+        except ImportError:
+            FastMCP = None  # Handled in create_server()
 
 from agent.safety.approvals import ApprovalManager
 from agent.safety.audit import AuditLogger
